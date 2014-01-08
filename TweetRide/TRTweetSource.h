@@ -9,5 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @interface TRTweetSource : NSObject
+@property NSString *accountName;
+@property (readonly) NSDate *creationDate;
 
 @end

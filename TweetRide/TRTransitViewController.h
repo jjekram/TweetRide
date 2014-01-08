@@ -9,5 +9,6 @@
 #import <UIKit/UIKit.h>
 
 @interface TRTransitViewController : UITableViewController
+- (IBAction)refreshPressed:(id)sender;
 
 @end

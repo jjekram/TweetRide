@@ -9,10 +9,27 @@
 #import "TRAddSourceViewController.h"
 
 @interface TRAddSourceViewController ()
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *doneAdd;
+@property (weak, nonatomic) IBOutlet UITextField *addSource;
 
 @end
 
 @implementation TRAddSourceViewController
+
+- (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    
+    if (sender != self.doneAdd) {
+        return;
+    }
+    
+    if (self.addSource.text.length > 0) {
+        self.fetchSource = [[TRTweetSource alloc] init];
+        self.fetchSource.accountName = self.addSource.text;
+        
+    }
+     
+}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {

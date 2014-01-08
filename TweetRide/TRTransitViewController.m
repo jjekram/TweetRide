@@ -7,8 +7,16 @@
 //
 
 #import "TRTransitViewController.h"
+#import <Accounts/Accounts.h>
+#import <Social/Social.h>
+
 
 @interface TRTransitViewController ()
+
+
+@property (strong, nonatomic) NSMutableArray *tweets;
+@property (strong, nonatomic) NSMutableArray *allTweets;
+
 
 @end
 
@@ -23,15 +31,13 @@
     return self;
 }
 
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    [self twitterTimeline];
 
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
- 
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
 - (void)didReceiveMemoryWarning
@@ -40,28 +46,173 @@
     // Dispose of any resources that can be recreated.
 }
 
+
+- (void)twitterTimeline {
+    
+    ACAccountStore *account = [[ACAccountStore alloc] init]; // Creates AccountStore object.
+    
+    // Asks for the Twitter accounts configured on the device.
+    
+    ACAccountType *accountType = [account accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    
+    
+    [account requestAccessToAccountsWithType:accountType options:nil completion:^(BOOL granted, NSError *error)
+     {
+         // If we have access to the Twitter accounts configured on the device we will contact the Twitter API.
+         
+         if (granted == YES){
+             
+             
+             NSArray *arrayOfAccounts = [account accountsWithAccountType:accountType]; // Retrieves an array of Twitter accounts configured on the device.
+             
+             // If there is a leat one account we will contact the Twitter API.
+             
+             if ([arrayOfAccounts count] > 0) {
+                 
+                 ACAccount *twitterAccount = [arrayOfAccounts lastObject]; // Sets the last account on the device to the twitterAccount variable.
+                 
+                 
+                 
+                 NSURL *url = [NSURL URLWithString:@"https://api.twitter.com"
+                               @"/1.1/statuses/user_timeline.json"];
+                 NSDictionary *params = @{@"screen_name" : @"TTCnotices",
+                                          @"include_rts" : @"0",
+                                          @"count" : @"50"};
+                 
+                 
+                 // This is where we are getting the data using SLRequest.
+                 
+                 SLRequest *posts = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:SLRequestMethodGET URL:url parameters:params];
+                 
+                 //posts.account = twitterAccount;
+                 
+                 [posts setAccount:twitterAccount];
+                 
+                 // The postRequest: method call now accesses the NSData object returned.
+                 
+                 [posts performRequestWithHandler:
+                  
+                  ^(NSData *response, NSHTTPURLResponse
+                    *urlResponse, NSError *error)
+                  {
+                      // The NSJSONSerialization class is then used to parse the data returned and assign it to our array.
+                      
+                      self.tweets = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableLeaves error:&error];
+                      
+                      
+                      //NSLog(_tweets);
+                      
+                      if (self.tweets.count != 0) {
+                          
+                          dispatch_async(dispatch_get_main_queue(), ^{
+                              
+                              [self.tableView reloadData]; // Here we tell the table view to reload the data it just recieved.
+                              
+                              NSIndexPath *top = [NSIndexPath indexPathForRow:0 inSection:0];
+                              [self.tableView scrollToRowAtIndexPath:top atScrollPosition:UITableViewScrollPositionTop animated:YES];
+                              
+                          });
+                          
+                      }
+                      
+                  }];
+                 
+             }
+             
+         } else {
+             
+             // Handle failure to get account access
+             NSLog(@"%@", [error localizedDescription]);
+             
+         }
+         
+     }];
+    
+}
+
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-#warning Potentially incomplete method implementation.
+//#warning Potentially incomplete method implementation.
     // Return the number of sections.
-    return 0;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-#warning Incomplete method implementation.
+//#warning Incomplete method implementation.
     // Return the number of rows in the section.
-    return 0;
+    return [self.tweets count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"Cell";
+    static NSString *CellIdentifier = @"CellTransit";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+    if (!cell)
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    
+    NSDictionary *tweet = self.tweets[indexPath.row];
+
+    NSString *tweetText = tweet[@"text"];
+    
+    if ([tweetText rangeOfString:@"clear" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        
+        cell.imageView.image = [UIImage imageNamed:@"green-dot.png"];
+        
+    }
+    
+    else if ([tweetText rangeOfString:@"No Service" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        cell.imageView.image = [UIImage imageNamed:@"red-dot.png"];
+   
+    }
+    
+    else if ([tweetText rangeOfString:@"delay" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        cell.imageView.image = [UIImage imageNamed:@"yellow-dot.png"];
+        
+    }
+    
+    
+    else if ([tweetText rangeOfString:@"suspend" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        cell.imageView.image = [UIImage imageNamed:@"yellow-dot.png"];
+        
+    }
+    
+    else if ([tweetText rangeOfString:@"divert" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        cell.imageView.image = [UIImage imageNamed:@"orange-dot.png"];
+        
+    }
+
+    else if ([tweetText rangeOfString:@"hold" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        cell.imageView.image = [UIImage imageNamed:@"orange-dot.png"];
+        
+    }
+
+    else {
+        cell.imageView.image = [UIImage imageNamed:@"white-dot.png"];
+    }
     
     // Configure the cell...
+    
+    cell.textLabel.text = tweet[@"text"];
+    cell.textLabel.adjustsFontSizeToFitWidth = YES;
+    cell.textLabel.font = [UIFont systemFontOfSize:13];
+    cell.textLabel.numberOfLines = 4;
+    
+    //No Selection Style
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"eee MMM dd HH:mm:ss ZZZZ yyyy"];
+    NSDate *apiTweetDate = [dateFormatter dateFromString:tweet[@"created_at"]];
+    [dateFormatter setDateFormat:@"h:mm a 'on' eee MMM dd \"yy"];
+    NSString *tweetDate = [dateFormatter stringFromDate:apiTweetDate];
+    
+    cell.detailTextLabel.text = tweetDate;
     
     return cell;
 }
@@ -117,4 +268,9 @@
 
  */
 
+
+
+- (IBAction)refreshPressed:(id)sender {
+    [self twitterTimeline];
+}
 @end

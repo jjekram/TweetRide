@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "TRTweetSource.h"
 
 @interface TRAddSourceViewController : UIViewController
+
+@property TRTweetSource *fetchSource;
 
 @end
