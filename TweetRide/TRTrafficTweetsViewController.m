@@ -33,6 +33,7 @@
 @property NSMutableArray *HWQEW;
 @property NSMutableArray *otherHW;
 
+
 @end
 
 
@@ -127,45 +128,66 @@
                       self.tweets = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableLeaves error:&error];
                       
                       
-                      
+                      //Now we need to organize the tweets by highway (if there is at least 1 tweet)
                       
                       if (self.tweets.count != 0) {
+                          
+                          // going through each tweet to put them into appropiate array.
+                          // ex. if there is a strig pattern "401", then add that tweet to HW401 array
+                          
                           for (int i = 0; i < [self.tweets count]; i++) {
                               
-                              BOOL other = TRUE;
+                              
+                              BOOL other = TRUE;    // this boolean is used to identify tweet that cannot be mapped to may array. FALSE when mapped to a highway.
+                              
+                              // mapping tweets to highways
+                              
+                              // 401
                               if ([self.tweets[i][@"text"] rangeOfString:@"401" ].location != NSNotFound) {
                                   
+                                  // the index of the tweet in the _tweets array is added to the array instead of the tweet itself.
                                   [self.HW401 addObject:[NSNumber numberWithInt:i]];
+                                  
                                   other = FALSE;
                               }
                               
+                              // 403
                               if ([self.tweets[i][@"text"] rangeOfString:@"403" ].location != NSNotFound){
                                   
                                   [self.HW403 addObject:[NSNumber numberWithInt:i]];
+                                  
                                   other = FALSE;
                               }
                               
+                              
+                              // 410
                               if ([self.tweets[i][@"text"] rangeOfString:@"410" ].location != NSNotFound){
+                                  
                                   [self.HW410 addObject:[NSNumber numberWithInt:i]];
+                                  
                                   other = FALSE;
                               }
                               
+                              // DVP
                               if ([self.tweets[i][@"text"] rangeOfString:@"DVP" options:NSCaseInsensitiveSearch].location != NSNotFound){
                                   
                                   [self.HWDVP addObject:[NSNumber numberWithInt:i]];
                                   other = FALSE;
                               }
                               
+                              // 427
                               if ([self.tweets[i][@"text"] rangeOfString:@"427" ].location != NSNotFound){
                                   [self.HW427 addObject:[NSNumber numberWithInt:i]];
                                   other = FALSE;
                               }
                               
+                              // QEW
                               if ([self.tweets[i][@"text"] rangeOfString:@"qew" options:NSCaseInsensitiveSearch].location != NSNotFound){
                                   [self.HWQEW addObject:[NSNumber numberWithInt:i]];
                                   other = FALSE;
                               }
                               
+                              // if not mapped to a highway then the tweet will appear in the other section
                               if (other) {
                     
                                   [self.otherHW addObject:[NSNumber numberWithInt:i]];
@@ -173,54 +195,97 @@
                               
                         }
                           
-                          //Identifying the highways that have no tweets.
+                          // Identifying the highways that have no tweets.
                           
+                          // add -1 to the highway array if there is no tweets available (aka empty array)
+                          
+                          // 401
                           if (self.HW401.count == 0) {
+                              
+                              // adding -1 to the array.
                               [self.HW401 addObject:[NSNumber numberWithInt:-1]];
                           }
                           
+                          //403
                           if (self.HW403.count == 0) {
+                              
                               [self.HW403 addObject:[NSNumber numberWithInt:-1]];
+                              
                           }
                           
+                          
+                          // 410
                           if (self.HW410.count == 0) {
+                              
                               [self.HW410 addObject:[NSNumber numberWithInt:-1]];
+                              
                           }
                           
+                          // DVP
                           if (self.HWDVP.count == 0) {
+                              
                               [self.HWDVP addObject:[NSNumber numberWithInt:-1]];
+                              
                           }
                           
+                          // 427
                           if (self.HW427.count == 0) {
+                              
                               [self.HW427 addObject:[NSNumber numberWithInt:-1]];
+                              
                           }
                           
+                          // QEW
                           if (self.HWQEW.count == 0) {
+                              
                               [self.HWQEW addObject:[NSNumber numberWithInt:-1]];
+                              
                           }
                           
+                          // Other
                           if (self.otherHW.count == 0) {
+                              
                               [self.otherHW addObject:[NSNumber numberWithInt:-1]];
                           }
                           
                           
                           
+                          // adding all the highway data into 'organizedTweets' array
                           
+                          // 401
                           [self.organizedTweets addObject:self.HW401];
+                          
+                          // 403
                           [self.organizedTweets addObject:self.HW403];
+                          
+                          // 410
                           [self.organizedTweets addObject:self.HW410];
+                          
+                          // DVP
                           [self.organizedTweets addObject:self.HWDVP];
+                          
+                          // 427
                           [self.organizedTweets addObject:self.HW427];
+                          
+                          // QEW
                           [self.organizedTweets addObject:self.HWQEW];
+                          
+                          // Other
                           [self.organizedTweets addObject:self.otherHW];
                           
                         
                           dispatch_async(dispatch_get_main_queue(), ^{
                               
-                              [self.tableView reloadData]; // Here we tell the table view to reload the data it just recieved.
+                              // reload the table with the data we just received now
+                              [self.tableView reloadData];
                               
+                              // also jump to the top of the table (section 0, row 0) after reloading.
+                              
+                              // indexPath to the top of the table.
                               NSIndexPath *top = [NSIndexPath indexPathForRow:0 inSection:0];
-                               [self.tableView scrollToRowAtIndexPath:top atScrollPosition:UITableViewScrollPositionTop animated:YES];
+                              
+                              // calling the scrolling function to execute the scroll
+                             [self.tableView scrollToRowAtIndexPath:top atScrollPosition:UITableViewScrollPositionTop animated:YES];
                               
                           });
                           
@@ -233,6 +298,16 @@
          } else {
              
              // Handle failure to get account access
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 UIAlertView *alertMessage = [[UIAlertView alloc]
+                                              initWithTitle:@"Connection Error"
+                                              message:@"Could Not connect to Twitter. Make sure you have a Twitter account added to this device."
+                                              delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+                 [alertMessage show];
+             });
+             
              NSLog(@"%@", [error localizedDescription]);
              
          }
@@ -256,27 +331,43 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-//#warning Potentially incomplete method implementation.
+
+    NSInteger numSec = 0;
+    
+    if (self.organizedTweets.count != 0) {
+        numSec = [self.allHighways count];
+    }
     // Return the number of sections.
-    return [self.allHighways count];
+    return numSec;
 }
+
+
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-//#warning Incomplete method implementation.
+
     // Return the number of rows in the section.
     
+    // return 0 if no tweets found else return the number of tweets in each section.
+    
     NSInteger numRows = 0;
+    
     if (self.organizedTweets.count!= 0) {
+        
         numRows = [self.organizedTweets[section] count];
+        
     }
+    
+    
     return numRows;
 }
+
+
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     
     
-    return self.allHighways[section];
+    return self.allHighways[section]; //allHighways = @[@"401",@"403",@"410",@"Don Valley Parkway",@"427",@"QEW",@"Other Highways"]
     
 }
 
@@ -285,16 +376,21 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"Cell";
+    
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
     }
     
     
-    // Configure the cell...
+    // Configuring the cell
+    
+    //  casting the index from type number to type integer
     NSInteger tweetIndex = [self.organizedTweets[indexPath.section][indexPath.row] integerValue];
     
+    // tweetindex -1 indicated that the section has no tweets. In that case, print
     
     if (tweetIndex != -1) {
         NSDictionary *tweet = self.tweets[tweetIndex];

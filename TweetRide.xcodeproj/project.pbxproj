@@ -167,12 +167,12 @@
 			isa = PBXGroup;
 			children = (
 				2FAB75C218596CA200B9C159 /* TRAppDelegate.h */,
+				2FAB75C318596CA200B9C159 /* TRAppDelegate.m */,
 				2FAB75E218596CE100B9C159 /* Main.storyboard */,
 				2F562CBC185AD11900DB9871 /* TRTrafficTweetsViewController.h */,
 				2F562CBD185AD11900DB9871 /* TRTrafficTweetsViewController.m */,
 				2FEB5B8C18688C6E0073FA3B /* TRTransitViewController.h */,
 				2FEB5B8D18688C6E0073FA3B /* TRTransitViewController.m */,
-				2FAB75C318596CA200B9C159 /* TRAppDelegate.m */,
 				2FAB75C518596CA200B9C159 /* Images.xcassets */,
 				2F9286151862AB4C007CA986 /* Images */,
 				2FAB75BA18596CA200B9C159 /* Supporting Files */,
