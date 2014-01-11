@@ -26,11 +26,15 @@
 
 // following data structures hold tweets of the highways they are named after.
 @property NSMutableArray *HW401;
+@property NSMutableArray *gardiner;
 @property NSMutableArray *HW403;
 @property NSMutableArray *HW410;
 @property NSMutableArray *HWDVP;
 @property NSMutableArray *HW427;
 @property NSMutableArray *HWQEW;
+@property NSMutableArray *HW400;
+@property NSMutableArray *HW404;
+@property NSMutableArray *HW407;
 @property NSMutableArray *otherHW;
 
 
@@ -58,13 +62,17 @@
     
     // initializing all the data structures.
     self.organizedTweets = [[NSMutableArray alloc] init];
-    self.allHighways = @[@"401",@"403",@"410",@"Don Valley Parkway",@"427",@"QEW",@"Other Highways"];
+    self.allHighways = @[@"401",@"Gardiner", @"403",@"410",@"Don Valley Parkway",@"427",@"QEW",@"400",@"404",@"407", @"Other Highways"];
     self.HW401 = [[NSMutableArray alloc] init];
+    self.gardiner = [[NSMutableArray alloc] init];
     self.HW403 = [[NSMutableArray alloc] init];
     self.HW410 = [[NSMutableArray alloc] init];
     self.HWDVP = [[NSMutableArray alloc] init];
     self.HW427 = [[NSMutableArray alloc] init];
     self.HWQEW = [[NSMutableArray alloc] init];
+    self.HW404 = [[NSMutableArray alloc] init];
+    self.HW407 = [[NSMutableArray alloc] init];
+    self.HW400 = [[NSMutableArray alloc] init];
     self.otherHW = [[NSMutableArray alloc] init];
 
 
@@ -151,6 +159,13 @@
                                   other = FALSE;
                               }
                               
+                              // Gardiner
+                              if ([self.tweets[i][@"text"] rangeOfString:@"gardiner" options:NSCaseInsensitiveSearch].location != NSNotFound){
+                                  
+                                  [self.gardiner addObject:[NSNumber numberWithInt:i]];
+                                  other = FALSE;
+                              }
+                              
                               // 403
                               if ([self.tweets[i][@"text"] rangeOfString:@"403" ].location != NSNotFound){
                                   
@@ -187,6 +202,28 @@
                                   other = FALSE;
                               }
                               
+                              // 400
+                              if ([self.tweets[i][@"text"] rangeOfString:@"400" ].location != NSNotFound){
+                                  [self.HW400 addObject:[NSNumber numberWithInt:i]];
+                                  other = FALSE;
+                              }
+                              
+                              // 404
+                              if ([self.tweets[i][@"text"] rangeOfString:@"404" ].location != NSNotFound){
+                                  [self.HW404 addObject:[NSNumber numberWithInt:i]];
+                                  other = FALSE;
+                              }
+                              
+                              // 407
+                              if ([self.tweets[i][@"text"] rangeOfString:@"407" ].location != NSNotFound){
+                                  [self.HW407 addObject:[NSNumber numberWithInt:i]];
+                                  other = FALSE;
+                              }
+                              
+                              
+
+
+                              
                               // if not mapped to a highway then the tweet will appear in the other section
                               if (other) {
                     
@@ -204,6 +241,13 @@
                               
                               // adding -1 to the array.
                               [self.HW401 addObject:[NSNumber numberWithInt:-1]];
+                          }
+                          
+                          // Gardiner
+                          if (self.gardiner.count == 0) {
+                              
+                              [self.gardiner addObject:[NSNumber numberWithInt:-1]];
+                              
                           }
                           
                           //403
@@ -242,6 +286,27 @@
                               
                           }
                           
+                          // 400
+                          if (self.HW400.count == 0) {
+                              
+                              [self.HW400 addObject:[NSNumber numberWithInt:-1]];
+                              
+                          }
+                          
+                          // 404
+                          if (self.HW404.count == 0) {
+                              
+                              [self.HW404 addObject:[NSNumber numberWithInt:-1]];
+                              
+                          }
+                          
+                          // 407
+                          if (self.HW407.count == 0) {
+                              
+                              [self.HW407 addObject:[NSNumber numberWithInt:-1]];
+                              
+                          }
+                          
                           // Other
                           if (self.otherHW.count == 0) {
                               
@@ -254,6 +319,9 @@
                           
                           // 401
                           [self.organizedTweets addObject:self.HW401];
+                          
+                          // Gardiner
+                          [self.organizedTweets addObject:self.gardiner];
                           
                           // 403
                           [self.organizedTweets addObject:self.HW403];
@@ -269,6 +337,15 @@
                           
                           // QEW
                           [self.organizedTweets addObject:self.HWQEW];
+                          
+                          // 400
+                          [self.organizedTweets addObject:self.HW400];
+                          
+                          // 404
+                          [self.organizedTweets addObject:self.HW404];
+                          
+                          // 407
+                          [self.organizedTweets addObject:self.HW407];
                           
                           // Other
                           [self.organizedTweets addObject:self.otherHW];
@@ -299,13 +376,14 @@
              
              // Handle failure to get account access
              dispatch_async(dispatch_get_main_queue(), ^{
-                 UIAlertView *alertMessage = [[UIAlertView alloc]
+                 UIAlertView *alert = [[UIAlertView alloc]
                                               initWithTitle:@"Connection Error"
                                               message:@"Could Not connect to Twitter. Make sure you have a Twitter account added to this device."
                                               delegate:nil
                                               cancelButtonTitle:@"OK"
                                               otherButtonTitles:nil];
-                 [alertMessage show];
+                 // show alert message
+                 [alert show];
              });
              
              NSLog(@"%@", [error localizedDescription]);
@@ -392,68 +470,110 @@
     
     // tweetindex -1 indicated that the section has no tweets. In that case, print
     
+    // if the section is not empty we print the tweets in that section
     if (tweetIndex != -1) {
         NSDictionary *tweet = self.tweets[tweetIndex];
         
         NSString *tweetText = tweet[@"text"];
         
+        // search for string in tweetText to identify the highway condition the tweet is representing
+        
+        // clear
         if ([tweetText rangeOfString:@"clear" options:NSCaseInsensitiveSearch].location != NSNotFound) {
             
+            // green dot appears in the cell
             cell.imageView.image = [UIImage imageNamed:@"green-dot.png"];
             
         }
         
+        // open
         else if ([tweetText rangeOfString:@"open" options:NSCaseInsensitiveSearch].location != NSNotFound) {
             
+            // green dot appears
             cell.imageView.image = [UIImage imageNamed:@"green-dot.png"];
             
         }
         
+        // block
         else if ([tweetText rangeOfString:@"block" options:NSCaseInsensitiveSearch].location != NSNotFound) {
             
+            // red dot appears
             cell.imageView.image = [UIImage imageNamed:@"red-dot.png"];
             
         }
         
+        // closed
         else if ([tweetText rangeOfString:@"closed" options:NSCaseInsensitiveSearch].location != NSNotFound) {
             
+            // red dot appears
             cell.imageView.image = [UIImage imageNamed:@"red-dot.png"];
             
         }
         
+        // (collosion OR delay OR slow OR crash OR construction) AND none of the prev condition is true
         else if (([tweetText rangeOfString:@"collision" options:NSCaseInsensitiveSearch].location != NSNotFound || [tweetText rangeOfString:@"delay" options:NSCaseInsensitiveSearch].location != NSNotFound || [tweetText rangeOfString:@"slow" options:NSCaseInsensitiveSearch].location != NSNotFound || [tweetText rangeOfString:@"crash" options:NSCaseInsensitiveSearch].location != NSNotFound || [tweetText rangeOfString:@"construction" options:NSCaseInsensitiveSearch].location != NSNotFound) && [tweetText rangeOfString:@"closed" options:NSCaseInsensitiveSearch].location == NSNotFound && [tweetText rangeOfString:@"block" options:NSCaseInsensitiveSearch].location == NSNotFound && [tweetText rangeOfString:@"clear" options:NSCaseInsensitiveSearch].location == NSNotFound && [tweetText rangeOfString:@"open" options:NSCaseInsensitiveSearch].location == NSNotFound) {
             
+            // yellow dot appears
             cell.imageView.image = [UIImage imageNamed:@"yellow-dot.png"];
             
         }
         
+        // case where tweet does not indicate any significant condition of the highway.
         else{
             
+            // nothing appears. a white dot is used for indentation purpose.
             cell.imageView.image = [UIImage imageNamed:@"white-dot.png"];
         }
         
-        
+        // printing the tweet
         cell.textLabel.text = tweet[@"text"];
         
+        //  now we need to format the 'created_at' string to convert the time to a format we want to show it in
+        
+        // create dateFormatter object
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        
+        // set the for as the format it appears in the tweet[@""]created_at
         [dateFormatter setDateFormat:@"eee MMM dd HH:mm:ss ZZZZ yyyy"];
+        
+        
+        // get the created_at string from the array
         NSDate *apiTweetDate = [dateFormatter dateFromString:tweet[@"created_at"]];
+        
+        // set the format to the format you want it to have.
         [dateFormatter setDateFormat:@"h:mm a 'on' eee MMM dd \"yy"];
+        
+        // convert to type string from type date
         NSString *tweetDate = [dateFormatter stringFromDate:apiTweetDate];
         
+        // print the date in the cell
         cell.detailTextLabel.text = tweetDate;
     }
     
+    // case when there is no tweet
     else {
-        cell.textLabel.text = @"No recent tweets about this highway available at this moment.";
+        
+       // print the following message
+       cell.textLabel.text = @"No recent tweets about this highway available at this moment.";
+        
+        // for indentation purpose only
        cell.imageView.image = [UIImage imageNamed:@"white-dot.png"];
+        
+        // subtitle should be blank
         cell.detailTextLabel.text = @"";
     
     }
     
+    // make sure the cell hold the whole tweet. so let it adjust font to fit width
     cell.textLabel.adjustsFontSizeToFitWidth = YES;
+    
+    // setting the font
     cell.textLabel.font = [UIFont systemFontOfSize:13];
+    
+    // min number of rows
     cell.textLabel.numberOfLines = 4;
+    
+    // nothing should happen when a cell is selected
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
     

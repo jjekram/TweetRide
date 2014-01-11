@@ -36,7 +36,8 @@
 {
     [super viewDidLoad];
     
-    [self twitterTimeline];
+    // calling the function that fetches tweets from the twitter account and parses them.
+    [self fetchAndParseTweetTransit];
 
 }
 
@@ -47,49 +48,51 @@
 }
 
 
-- (void)twitterTimeline {
+- (void)fetchAndParseTweetTransit {
     
-    ACAccountStore *account = [[ACAccountStore alloc] init]; // Creates AccountStore object.
+    ACAccountStore *account = [[ACAccountStore alloc] init];
     
     // Asks for the Twitter accounts configured on the device.
     
     ACAccountType *accountType = [account accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
     
     
+    //
     [account requestAccessToAccountsWithType:accountType options:nil completion:^(BOOL granted, NSError *error)
      {
          // If we have access to the Twitter accounts configured on the device we will contact the Twitter API.
          
+         // if a twiiter account is found on the device to connect with the api
          if (granted == YES){
              
-             
-             NSArray *arrayOfAccounts = [account accountsWithAccountType:accountType]; // Retrieves an array of Twitter accounts configured on the device.
+             // retrieve the array of twitter accounts
+             NSArray *arrayOfAccounts = [account accountsWithAccountType:accountType];
              
              // If there is a leat one account we will contact the Twitter API.
              
              if ([arrayOfAccounts count] > 0) {
                  
-                 ACAccount *twitterAccount = [arrayOfAccounts lastObject]; // Sets the last account on the device to the twitterAccount variable.
+                 ACAccount *twitterAccount = [arrayOfAccounts lastObject];
                  
-                 
-                 
+                 // url to the address we are getting the data from
                  NSURL *url = [NSURL URLWithString:@"https://api.twitter.com"
                                @"/1.1/statuses/user_timeline.json"];
+                 
+                 // passing parameters to the api to get data from TTC_notices twitter account
                  NSDictionary *params = @{@"screen_name" : @"TTCnotices",
                                           @"include_rts" : @"0",
                                           @"count" : @"50"};
                  
                  
-                 // This is where we are getting the data using SLRequest.
+                 // this is where we are getting the data using SLRequest.
                  
                  SLRequest *posts = [SLRequest requestForServiceType:SLServiceTypeTwitter requestMethod:SLRequestMethodGET URL:url parameters:params];
                  
-                 //posts.account = twitterAccount;
                  
+                // adding the twitter account from
                  [posts setAccount:twitterAccount];
                  
                  // The postRequest: method call now accesses the NSData object returned.
-                 
                  [posts performRequestWithHandler:
                   
                   ^(NSData *response, NSHTTPURLResponse
@@ -271,6 +274,6 @@
 
 
 - (IBAction)refreshPressed:(id)sender {
-    [self twitterTimeline];
+    [self fetchAndParseTweetTransit];
 }
 @end
