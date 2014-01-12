@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "TweetRide/TRTrafficTweetsViewController.m"
-            timestampString = "411203859.494815"
+            timestampString = "411245503.882415"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "593"
-            endingLineNumber = "593"
+            startingLineNumber = "599"
+            endingLineNumber = "599"
             landmarkName = "@implementation TRTrafficTweetsViewController"
             landmarkType = "3">
          </BreakpointContent>

@@ -45,6 +45,9 @@
 
 @implementation TRTrafficTweetsViewController
 
+- (IBAction)unwindToTrafficTweets:(UIStoryboardSegue *)segue {
+    // nothing to do
+}
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -360,7 +363,7 @@
                               
                               // also jump to the top of the table (section 0, row 0) after reloading.
                               
-                              // indexPath to the top of the table.
+                              // indexPath to the top of the section the user was on before refresh.
                               NSIndexPath *prevSection = [NSIndexPath indexPathForRow:0 inSection:self.currentSection];
                               
                               // calling the scrolling function to execute the scroll
@@ -578,7 +581,10 @@
     // nothing should happen when a cell is selected
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
+    // for scrolling purpose after refresh. saving the current section
     self.currentSection = indexPath.section;
+    
+    
     return cell;
 }
 

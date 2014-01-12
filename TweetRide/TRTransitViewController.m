@@ -22,6 +22,10 @@
 
 @implementation TRTransitViewController
 
+- (IBAction)unwindToTransitTweets:(UIStoryboardSegue *)segue {
+    // nothing to do 
+}
+
 - (id)initWithStyle:(UITableViewStyle)style
 {
     self = [super initWithStyle:style];
