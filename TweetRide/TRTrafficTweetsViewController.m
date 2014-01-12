@@ -36,6 +36,7 @@
 @property NSMutableArray *HW404;
 @property NSMutableArray *HW407;
 @property NSMutableArray *otherHW;
+@property NSInteger currentSection;
 
 
 @end
@@ -78,6 +79,7 @@
 
     // calling 'fetchAndParseTweets' function to fetch and parse the tweets from the accounts' timeline.
     [self fetchAndParseTweets];
+    
     
 }
 
@@ -359,10 +361,10 @@
                               // also jump to the top of the table (section 0, row 0) after reloading.
                               
                               // indexPath to the top of the table.
-                              NSIndexPath *top = [NSIndexPath indexPathForRow:0 inSection:0];
+                              NSIndexPath *prevSection = [NSIndexPath indexPathForRow:0 inSection:self.currentSection];
                               
                               // calling the scrolling function to execute the scroll
-                             [self.tableView scrollToRowAtIndexPath:top atScrollPosition:UITableViewScrollPositionTop animated:YES];
+                             [self.tableView scrollToRowAtIndexPath:prevSection atScrollPosition:UITableViewScrollPositionTop animated:YES];
                               
                           });
                           
@@ -576,7 +578,7 @@
     // nothing should happen when a cell is selected
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     
-    
+    self.currentSection = indexPath.section;
     return cell;
 }
 
@@ -649,8 +651,11 @@
     [self.organizedTweets removeAllObjects];
     
     [self fetchAndParseTweets];
-    //[self.tableView setContentOffset:CGPointZero animated:YES];
+    
+    
+    
 }
+
 
 
 @end
